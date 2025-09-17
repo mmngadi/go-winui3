@@ -290,13 +290,11 @@ func IsMouseButtonReleased(button int) bool {
 func GetMouseX() int { mouseStateMu.Lock(); x := mouseX; mouseStateMu.Unlock(); return x }
 func GetMouseY() int { mouseStateMu.Lock(); y := mouseY; mouseStateMu.Unlock(); return y }
 
-type Vector2 struct{ X, Y int }
-
-func GetMousePosition() Vector2 {
+func GetMousePosition() (int, int) {
 	mouseStateMu.Lock()
-	v := Vector2{mouseX, mouseY}
+	x, y := mouseX, mouseY
 	mouseStateMu.Unlock()
-	return v
+	return x, y
 }
 
 // SetMousePosition sets the global cursor position (screen coordinates).
