@@ -1,0 +1,56 @@
+# Go build artifacts
+*.exe
+*.exe~
+*.dll
+*.dll.lib
+*.so
+*.dylib
+*.test
+*.out
+
+# Go coverage / profiling
+*.cover
+*.prof
+
+# C/C++ / MSVC intermediates
+*.obj
+*.pch
+*.pdb
+*.ilk
+*.idb
+*.exp
+*.lib
+*.ipdb
+*.iobj
+
+# WinUI / MSIX / Packaging
+*.pri
+*.winmd
+AppxManifest.xml
+Generated Files/
+
+# Build output directories
+/bin/
+/obj/
+
+# Visual Studio user-specific
+.vs/
+packages
+x64
+*.user
+*.vcxproj.user
+
+# Logs
+winui.log
+*.log
+
+# IDE/editor
+*.swp
+*.suo
+.vscode/
+.idea/
+
+# Temporary
+~$*
+.DS_Store
+Thumbs.db

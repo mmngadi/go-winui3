@@ -1,0 +1,20 @@
+﻿EXPORTS
+DllCanUnloadNow = WINRT_CanUnloadNow                    PRIVATE
+DllGetActivationFactory = WINRT_GetActivationFactory    PRIVATE
+InitUI
+ShutdownUI
+create_window
+create_text_input
+get_main_window
+window_exists
+is_window_ready
+wait_for_window_ready
+get_runtime_state
+set_window_title
+get_window_size
+register_resize_callback
+register_input_callback
+register_close_callback
+begin_shutdown_async
+winui_last_unhandled_exception_message
+set_window_min_max
