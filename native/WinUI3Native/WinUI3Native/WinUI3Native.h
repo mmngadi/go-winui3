@@ -31,6 +31,15 @@ extern "C" {
     WINUI3NATIVE_API ControlHandle __stdcall get_main_window();
     WINUI3NATIVE_API int __stdcall window_exists();
 
+    // Container Control Creation Functions (runs on UI thread)
+    WINUI3NATIVE_API ControlHandle __stdcall create_stack_panel();
+    WINUI3NATIVE_API ControlHandle __stdcall create_grid();
+    WINUI3NATIVE_API void __stdcall add_child(ControlHandle parent, ControlHandle child);
+    WINUI3NATIVE_API ControlHandle __stdcall create_text_input(ControlHandle parent_handle, const wchar_t* content);
+    
+    // Container Control Cleanup Functions (runs on UI thread)
+    WINUI3NATIVE_API void __stdcall release_control(ControlHandle handle);
+
     // Window metadata & control
     WINUI3NATIVE_API void __stdcall set_window_title(const wchar_t* title);
     WINUI3NATIVE_API void __stdcall get_window_size(double* width, double* height);

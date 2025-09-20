@@ -323,6 +323,7 @@ var (
 	pBeginShutdownAsync                                                *windows.Proc
 	pGetRuntimeState                                                   *windows.Proc
 	pSetWindowMinMax                                                   *windows.Proc
+	pCreateStackPanel, pCreateGrid, pAddChild, pReleaseControl         *windows.Proc
 
 	resizeHandlerMu sync.RWMutex
 	resizeHandler   ResizeHandler
@@ -556,6 +557,10 @@ func Load(dllDirs ...string) error {
 		pBeginShutdownAsync = must("begin_shutdown_async")
 		pGetRuntimeState = must("get_runtime_state")
 		pSetWindowMinMax = must("set_window_min_max")
+		pCreateStackPanel = must("create_stack_panel")
+		pCreateGrid = must("create_grid")
+		pAddChild = must("add_child")
+		pReleaseControl = must("release_control")
 	})
 	if dllErr != nil {
 		return dllErr
@@ -587,17 +592,26 @@ func Init() error {
 
 // Shutdown releases the runtime.
 func Shutdown() {
-	if pShutdownUI != nil {
-		pShutdownUI.Call()
-	}
+	// Use the same once pattern as BeginShutdownAsync to ensure we only shutdown once
+	shutdownOnce.Do(func() {
+		if pShutdownUI != nil {
+			pShutdownUI.Call()
+		}
+	})
 }
+
+// Package level singleton to ensure shutdown is called only once
+var shutdownOnce sync.Once
 
 // BeginShutdownAsync starts native shutdown on a detached thread (idempotent).
 // Use this when you need to request shutdown without blocking caller.
 func BeginShutdownAsync() {
-	if pBeginShutdownAsync != nil {
-		pBeginShutdownAsync.Call()
-	}
+	// Only call shutdown once
+	shutdownOnce.Do(func() {
+		if pBeginShutdownAsync != nil {
+			pBeginShutdownAsync.Call()
+		}
+	})
 }
 
 // HRESULT is a helper for formatting.
@@ -629,6 +643,42 @@ func CreateTextInput(parent Handle, text string) Handle {
 	t16, _ := syscall.UTF16PtrFromString(text)
 	r, _, _ := pCreateTextInput.Call(uintptr(parent), uintptr(unsafe.Pointer(t16)))
 	return Handle(r)
+}
+
+// CreateStackPanel creates a StackPanel container control.
+func CreateStackPanel() Handle {
+	if pCreateStackPanel == nil {
+		return 0
+	}
+	r, _, _ := pCreateStackPanel.Call()
+	return Handle(r)
+}
+
+// CreateGrid creates a Grid container control.
+func CreateGrid() Handle {
+	if pCreateGrid == nil {
+		return 0
+	}
+	r, _, _ := pCreateGrid.Call()
+	return Handle(r)
+}
+
+// AddChild adds a child control to a parent container.
+// Works with StackPanel, Grid, ContentControl, Border, and other containers.
+func AddChild(parent, child Handle) {
+	if pAddChild == nil {
+		return
+	}
+	pAddChild.Call(uintptr(parent), uintptr(child))
+}
+
+// ReleaseControl safely releases a WinRT control handle to prevent memory leaks.
+// Should be called when a control is no longer needed.
+func ReleaseControl(handle Handle) {
+	if pReleaseControl == nil || handle == 0 {
+		return
+	}
+	pReleaseControl.Call(uintptr(handle))
 }
 
 // WindowExists returns true if native window exists.

@@ -18,3 +18,8 @@ register_close_callback
 begin_shutdown_async
 winui_last_unhandled_exception_message
 set_window_min_max
+winui_poll_events
+create_stack_panel
+create_grid
+add_child
+release_control

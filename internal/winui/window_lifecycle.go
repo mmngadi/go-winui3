@@ -198,9 +198,45 @@ func (w *Window) Run(ctx context.Context) {
 		time.Sleep(time.Duration(float64(time.Second) / float64(fps)))
 	}
 
-	// Stop + Destroy
+	// Stop + Destroy - using safeCall to prevent panics from callbacks
+	// First clear all event handlers
+	ResetInputCallbacks()
+	ResetResizeCallback()
+
+	// Execute lifecycle events
 	w.emitSimple(w.onStop)
 	w.emitSimple(w.onDestroy)
+
+	// Ensure all callbacks are cleared before final shutdown
+	w.mu.Lock()
+	w.onCreate = nil
+	w.onStart = nil
+	w.onUpdate = nil
+	w.onResume = nil
+	w.onPause = nil
+	w.onStop = nil
+	w.onDestroy = nil
+	w.onResize = nil
+	w.content = nil
+	w.ctx = nil
+	w.mu.Unlock()
+
+	// Wait a bit to ensure any pending callbacks have completed
+	time.Sleep(50 * time.Millisecond)
+
+	// If native shutdown was already requested (e.g., via window close or ESC),
+	// do not call Shutdown() again. Instead, wait briefly for teardown to finish.
+	// This avoids redundant native calls and potential races during process exit.
+	if GetRuntimeState().ShutdownRequested {
+		deadline := time.Now().Add(2500 * time.Millisecond)
+		for WindowExists() && time.Now().Before(deadline) {
+			time.Sleep(20 * time.Millisecond)
+		}
+		return
+	}
+
+	// Otherwise, perform synchronous shutdown so native UI thread joins before returning.
+	Shutdown()
 }
 
 // emitSimple invokes callbacks with panic recovery.
